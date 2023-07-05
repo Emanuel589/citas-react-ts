@@ -1,7 +1,7 @@
 import {useState, useEffect} from "react";
 import Error from "./Error";
 
-const Formulario = ({ pacientes, setPacientes }: any) => {
+const Formulario = ({ pacientes, setPacientes, paciente, setPaciente}: any) => {
 
   const [nombreMascota, setNombreMascota] = useState('');
   const [nombrePropietario, setNombrePropietario] = useState('');
@@ -11,6 +11,22 @@ const Formulario = ({ pacientes, setPacientes }: any) => {
 
   const [error, setError] = useState(false)
 
+  useEffect(() => {
+    if (Object.keys(paciente).length > 0) {
+      setNombreMascota(paciente.nombreMascota)
+      setNombrePropietario(paciente.nombrePropietario)
+      setEmail(paciente.email)
+      setFecha(paciente.fecha)
+      setSintomas(paciente.sintomas)
+
+      console.log(paciente)
+    } else {
+      console.log('No hay datos')
+    }    
+    
+  },[paciente]);
+
+
   const generarId = () => {
     const random = Math.random().toString(36).substring(2)
     const fecha = Date.now().toString(36)
@@ -19,13 +35,13 @@ const Formulario = ({ pacientes, setPacientes }: any) => {
 
   const handleSubmit = (e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Enviando Formulario...')
+    //console.log('Enviando Formulario...')
 
    if ([nombreMascota, nombrePropietario, email, fecha, sintomas].includes('')) {
-      console.log('Existe algun campo vacio. Debe ingresar datos en todos los campos...')
+      //console.log('Existe algun campo vacio. Debe ingresar datos en todos los campos...')
       setError(true)
     } else {
-      console.log('Todos los campos estan llenos...')
+      //console.log('Todos los campos estan llenos...')
       setError(false)
 
       const objetoPaciente = {
@@ -34,9 +50,37 @@ const Formulario = ({ pacientes, setPacientes }: any) => {
         email, 
         fecha, 
         sintomas,
-        id: generarId()
+        id:'',
       }
-       setPacientes([...pacientes, objetoPaciente]);
+
+      if (paciente.id) {
+        // si existe el paciente se edita el registro
+        objetoPaciente.id = paciente.id
+        console.log(paciente)
+        console.log(objetoPaciente)
+
+        const pacientesActualizados = pacientes.map( 
+          (pacienteState:any) => paciente.id === pacienteState.id ? objetoPaciente : pacienteState
+        )
+
+        setPacientes(pacientesActualizados)
+        setPaciente({})
+
+      } else {
+        // si no existe el paciente se crea un nuevo registro
+        objetoPaciente.id = generarId();
+        setPacientes([...pacientes, objetoPaciente]);
+      }
+       
+
+       // Limpiamos las variables
+       setNombreMascota('')
+       setNombrePropietario('') 
+       setEmail('') 
+       setFecha('') 
+       setSintomas('')
+
+       
     }
     
   }
@@ -116,9 +160,8 @@ const Formulario = ({ pacientes, setPacientes }: any) => {
 
                 <input 
                   type="submit"
-                  value="Agregar Paciente"
                   className="bg-indigo-600 w-full p-3 text-white uppercase font-bold hover:bg-indigo-700 cursor-pointer transition-all" 
-                
+                  value={paciente.id ? 'Editar Paciente' : 'Agregar Paciente'}
                 />
             </form>          
           
